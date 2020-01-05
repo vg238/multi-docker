@@ -1,0 +1,23 @@
+laguage: generic
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t vijayganji/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run vijayganji/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t vijayganji/multi-client ./client
+  - docker build -t vijayganji/multi-nginx ./nginx
+  - docker build -t vijayganji/multi-server ./server
+  - docker build -t vijayganji/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push vijayganji/multi-client
+  - docker push vijayganji/multi-nginx
+  - docker push vijayganji/multi-server
+  - docker push vijayganji/multi-worker
